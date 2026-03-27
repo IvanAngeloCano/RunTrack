@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>RunTrack Lite</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="icons\icon-192x192.png">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#5e17eb" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <script defer src="app.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn {
+      transition: all 0.15s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.92);
+      opacity: 0.8;
+    }
+
+    /* Sidebar animation */
+    .slide-in {
+      transform: translateX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .slide-out {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+  </style>
+</head>
+
+
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+  <header class="bg-[#5e17eb] text-white flex justify-between items-center px-4 py-3 shadow-md">
+
+    <a class="flex items-center gap-2" href="index.html">
+      <img src="icons\icon-192x192.png" class="w-8 h-8">
+      <h1 class="text-lg font-semibold">RunTrack Lite</h1>
+    </a>
+
+    <!-- Hamburger (mobile only) -->
+    <button onclick="toggleMenu()" class="md:hidden">
+      <span class="material-icons">menu</span>
+    </button>
+
+  </header>
+
+  <!-- CONTENT AREA -->
+  <div class="flex flex-1">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed md:static top-0 left-0 z-50 w-64 h-full md:h-auto bg-white shadow-lg p-4
+             transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+
+      <nav class="space-y-3 mt-4 md:mt-0">
+        <button id="nav-home" onclick="navigate('home')"
+          class="flex items-center gap-2 w-full p-2 rounded-lg transition-colors">
+          <span class="material-icons">directions_run</span> Home
+        </button>
+
+        <button id="nav-cadence" onclick="navigate('cadence')"
+          class="flex items-center gap-2 w-full p-2 rounded-lg transition-colors">
+          <span class="material-icons">music_note</span> Cadence
+        </button>
+
+        <button id="nav-about" onclick="navigate('about')"
+          class="flex items-center gap-2 w-full p-2 rounded-lg transition-colors">
+          <span class="material-icons">info</span> About
+        </button>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 p-4 max-w-4xl mx-auto w-full">
+
+      <section id="home">
+        <div class="bg-white p-6 rounded-2xl shadow text-center mb-4 transition hover:shadow-lg">
+          <h2 id="timer" class="text-4xl font-bold text-[#5e17eb]">00:00</h2>
+
+          <div class="mt-4 flex justify-center gap-2">
+            <button onclick="toggleRun()"
+              class="btn bg-green-500 px-4 py-2 rounded text-white flex items-center justify-center">
+              <span id="playIcon" class="material-icons">play_arrow</span>
+            </button>
+
+            <button onclick="resetRun()"
+              class="btn bg-gray-500 px-4 py-2 rounded text-white flex items-center justify-center">
+              <span class="material-icons">restart_alt</span>
+            </button>
+
+            <button onclick="saveRun()"
+              class="btn bg-[#5e17eb] px-4 py-2 rounded text-white flex items-center justify-center">
+              <span class="material-icons">save</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- RUN HISTORY -->
+        <div class="bg-white p-4 rounded-2xl shadow">
+          <h3 class="font-semibold mb-2">Runs</h3>
+          <div id="history" class="space-y-2"></div>
+        </div>
+      </section>
+
+      <!-- CADENCE -->
+      <section id="cadence" class="hidden text-center">
+        <div class="bg-white p-6 rounded-2xl shadow">
+          <h2 class="text-xl font-semibold mb-4">Tap Your Cadence</h2>
+
+          <button onclick="tapCadence()" class="btn bg-[#5e17eb] text-white px-6 py-4 rounded-xl">
+            TAP
+          </button>
+
+          <div id="cadenceResult" class="mt-4"></div>
+        </div>
+      </section>
+
+      <!-- ABOUT -->
+      <section id="about" class="hidden">
+        <div class="bg-white p-6 rounded-2xl shadow">
+          <h2 class="text-xl font-semibold mb-2">About</h2>
+          <p class="text-gray-600 text-sm">
+            RunTrack Lite helps track your runs and match your cadence with music.
+          </p>
+        </div>
+      </section>
+
+
+    </main>
+
+  </div>
+  <!-- SAVE MODAL -->
+  <div id="saveModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+      <h2 class="text-xl font-bold mb-4 text-[#5e17eb]">Save Your Run</h2>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Run Name</label>
+          <input id="modalRunName" type="text" class="w-full border p-2 rounded-lg outline-[#5e17eb]">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Distance (km)</label>
+            <input id="modalKM" type="number" step="0.01" oninput="calculatePace()" placeholder="5.0"
+              class="w-full border p-2 rounded-lg outline-[#5e17eb]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Pace (min/km)</label>
+            <input id="modalPace" type="text" readonly placeholder="0:00"
+              class="w-full border p-2 rounded-lg bg-gray-50 italic">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-500 mb-2 text-center">How did it feel?</label>
+          <div class="flex justify-between px-2">
+            <button onclick="setMood(1)" class="mood-btn text-gray-300 hover:text-red-500 transition-all">
+              <span class="material-icons text-3xl">sentiment_very_dissatisfied</span>
+            </button>
+            <button onclick="setMood(2)" class="mood-btn text-gray-300 hover:text-orange-400 transition-all">
+              <span class="material-icons text-3xl">sentiment_dissatisfied</span>
+            </button>
+            <button onclick="setMood(3)" class="mood-btn text-gray-300 hover:text-yellow-500 transition-all">
+              <span class="material-icons text-3xl">sentiment_neutral</span>
+            </button>
+            <button onclick="setMood(4)" class="mood-btn text-gray-300 hover:text-green-400 transition-all">
+              <span class="material-icons text-3xl">sentiment_satisfied</span>
+            </button>
+            <button onclick="setMood(5)" class="mood-btn text-gray-300 hover:text-green-600 transition-all">
+              <span class="material-icons text-3xl">sentiment_very_satisfied</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex gap-2">
+        <button onclick="closeModal()" class="flex-1 py-2 text-gray-500 font-semibold">Cancel</button>
+        <button onclick="confirmSave()" class="flex-1 py-2 bg-[#5e17eb] text-white rounded-xl font-semibold">Save
+          Run</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
