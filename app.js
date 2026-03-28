@@ -2,9 +2,8 @@ let seconds = 0;
 let interval = null;
 let running = false;
 
-// INIT
 displayRuns();
-navigate('home'); // Set the initial active state
+navigate('home'); 
 
 // TIMER
 function updateTimer() {
@@ -115,7 +114,6 @@ function setMood(val) {
 function confirmSave() {
   const runs = JSON.parse(localStorage.getItem("runs")) || [];
 
-  // Map our 1-5 scale to Material Icon names
   const moodIcons = [
     "sentiment_very_dissatisfied",
     "sentiment_dissatisfied",
@@ -233,18 +231,79 @@ function tapCadence() {
     const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
     const bpm = Math.round(60000 / avg);
 
-    let playlist = bpm < 160 ? "Strut"
-      : bpm <= 164 ? "160–164"
-        : bpm <= 169 ? "165–169"
-          : "170+";
+    // 1. Determine the correct Playlist Name and URL based on BPM
+    let playlistName = "";
+    let spotifyUrl = "";
 
+    if (bpm < 160) {
+      playlistName = "Strut";
+      spotifyUrl = "https://open.spotify.com/embed/playlist/4teePpHKnVBikVcVUt52T0?utm_source=generator";
+    } else if (bpm <= 164) {
+      playlistName = "160–164 BPM";
+      spotifyUrl = "https://open.spotify.com/embed/playlist/72f18esEExvG290ZB9UuhT?utm_source=generator";
+    } else if (bpm <= 169) {
+      playlistName = "165–169 BPM";
+      spotifyUrl = "https://open.spotify.com/embed/playlist/3xvpSFB4DiHSGx76ZphXas?utm_source=generator";
+    } else {
+      playlistName = "170+ BPM";
+      spotifyUrl = "https://open.spotify.com/embed/playlist/09yEZckCa4oTzUF1N1MKO5?utm_source=generator";
+    }
+
+    // 2. Render the BPM result and the Spotify Embed
     document.getElementById("cadenceResult").innerHTML = `
-      <div class="p-4 border rounded-xl animate-pulse">
-        <div class="text-lg font-semibold">${bpm} BPM</div>
-        <div class="text-sm text-gray-600">${playlist} Playlist</div>
+      <div class="mt-4 p-4 border rounded-xl bg-gray-50 animate-in fade-in duration-500">
+        <div class="text-2xl font-bold text-[#5e17eb]">${bpm} <span class="text-sm font-normal text-gray-500">BPM</span></div>
+        <p class="text-sm text-gray-600 mb-4">Recommended: ${playlistName}</p>
+        
+        <iframe 
+          style="border-radius:12px" 
+          src="${spotifyUrl}" 
+          width="100%" 
+          height="152" 
+          frameBorder="0" 
+          allowfullscreen="" 
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+          loading="lazy">
+        </iframe>
       </div>
     `;
   }
+}
+
+function showAllPlaylists() {
+  const container = document.getElementById("allPlaylists");
+  const grid = document.getElementById("playlistGrid");
+  
+  // Toggle visibility
+  if (!container.classList.contains("hidden")) {
+    container.classList.add("hidden");
+    return;
+  }
+
+  container.classList.remove("hidden");
+
+  // Define the list of playlists
+  const playlists = [
+    { name: "Strut (< 160 BPM)", url: "https://open.spotify.com/embed/playlist/4teePpHKnVBikVcVUt52T0?utm_source=generator" },
+    { name: "160–164 BPM", url: "https://open.spotify.com/embed/playlist/72f18esEExvG290ZB9UuhT?utm_source=generator" },
+    { name: "165–169 BPM", url: "https://open.spotify.com/embed/playlist/3xvpSFB4DiHSGx76ZphXas?utm_source=generator" },
+    { name: "170+ BPM", url: "https://open.spotify.com/embed/playlist/09yEZckCa4oTzUF1N1MKO5?utm_source=generator" }
+  ];
+
+  // Inject all iframes if they haven't been loaded yet
+  grid.innerHTML = playlists.map(pl => `
+    <div class="text-left">
+      <p class="text-xs font-bold text-gray-400 uppercase mb-1 ml-1">${pl.name}</p>
+      <iframe 
+        style="border-radius:12px" 
+        src="${pl.url}" 
+        width="100%" height="80" 
+        frameBorder="0" 
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+        loading="lazy">
+      </iframe>
+    </div>
+  `).join('');
 }
 
 // INIT
